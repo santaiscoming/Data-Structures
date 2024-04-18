@@ -11,219 +11,280 @@ Purpose: Implementing the required functions for Question 5 */
 
 //////////////////////////////////////////////////////////////////////////////////
 
-typedef struct _listnode{
-	int item;
-	struct _listnode *next;
-} ListNode;			// You should not change the definition of ListNode
+typedef struct _listnode {
+  int item;
+  struct _listnode *next;
+} ListNode;  // You should not change the definition of ListNode
 
-typedef struct _linkedlist{
-	int size;
-	ListNode *head;
-} LinkedList;			// You should not change the definition of LinkedList
+typedef struct _linkedlist {
+  int size;
+  ListNode *head;
+} LinkedList;  // You should not change the definition of LinkedList
 
-
-///////////////////////// function prototypes ////////////////////////////////////
+///////////////////////// function prototypes
+///////////////////////////////////////
 
 // You should not change the prototype of this function
-void frontBackSplitLinkedList(LinkedList* ll, LinkedList *resultFrontList, LinkedList *resultBackList);
+void frontBackSplitLinkedList(LinkedList *ll, LinkedList *resultFrontList,
+                              LinkedList *resultBackList);
 
 void printList(LinkedList *ll);
 void removeAllItems(LinkedList *l);
-ListNode * findNode(LinkedList *ll, int index);
+ListNode *findNode(LinkedList *ll, int index);
 int insertNode(LinkedList *ll, int index, int value);
 int removeNode(LinkedList *ll, int index);
 
+///////////////////////////// main()
+////////////////////////////////////////////////
+int findIndex(LinkedList *ll, int item);
+ListNode *findLastNode(LinkedList *ll);
 
-///////////////////////////// main() /////////////////////////////////////////////
+int main() {
+  int c, i;
+  LinkedList ll;
+  LinkedList resultFrontList, resultBackList;
 
-int main()
-{
-	int c, i;
-	LinkedList ll;
-	LinkedList resultFrontList, resultBackList;
+  // Initialize the linked list as an empty linked list
+  ll.head = NULL;
+  ll.size = 0;
 
-	//Initialize the linked list as an empty linked list
-	ll.head = NULL;
-	ll.size = 0;
+  // Initialize the front linked list as an empty linked list
+  resultFrontList.head = NULL;
+  resultFrontList.size = 0;
 
-	//Initialize the front linked list as an empty linked list
-	resultFrontList.head = NULL;
-	resultFrontList.size = 0;
+  // Initialize the back linked list as an empty linked list
+  resultBackList.head = NULL;
+  resultBackList.size = 0;
 
-	// Initialize the back linked list as an empty linked list
-	resultBackList.head = NULL;
-	resultBackList.size = 0;
+  printf("1: Insert an integer to the linked list:\n");
+  printf(
+      "2: Split the linked list into two linked lists, frontList and "
+      "backList:\n");
+  printf("0: Quit:\n");
 
-	printf("1: Insert an integer to the linked list:\n");
-	printf("2: Split the linked list into two linked lists, frontList and backList:\n");
-	printf("0: Quit:\n");
+  while (c != 0) {
+    printf("Please input your choice(1/2/0): ");
+    scanf("%d", &c);
 
-	while (c != 0)
-	{
-	    printf("Please input your choice(1/2/0): ");
-		scanf("%d", &c);
+    switch (c) {
+      case 1:
+        printf("Input an integer that you want to add to the linked list: ");
+        scanf("%d", &i);
+        insertNode(&ll, ll.size, i);
+        printf("The resulting linked list is: ");
+        printList(&ll);
+        break;
+      case 2:
+        printf(
+            "The resulting linked lists after splitting the given linked list "
+            "are:\n");
+        frontBackSplitLinkedList(
+            &ll, &resultFrontList,
+            &resultBackList);  // You need to code this function
+        printf("Front linked list: ");
+        printList(&resultFrontList);
+        printf("Back linked list: ");
+        printList(&resultBackList);
+        printf("\n");
+        removeAllItems(&ll);
+        removeAllItems(&resultFrontList);
+        removeAllItems(&resultBackList);
+        break;
+      case 0:
+        removeAllItems(&ll);
+        removeAllItems(&resultFrontList);
+        removeAllItems(&resultBackList);
+        break;
+      default:
+        printf("Choice unknown;\n");
+        break;
+    }
+  }
 
-		switch (c)
-		{
-		case 1:
-			printf("Input an integer that you want to add to the linked list: ");
-			scanf("%d", &i);
-			insertNode(&ll, ll.size, i);
-			printf("The resulting linked list is: ");
-			printList(&ll);
-			break;
-		case 2:
-			printf("The resulting linked lists after splitting the given linked list are:\n");
-			frontBackSplitLinkedList(&ll, &resultFrontList, &resultBackList); // You need to code this function
-			printf("Front linked list: ");
-			printList(&resultFrontList);
-			printf("Back linked list: ");
-			printList(&resultBackList);
-			printf("\n");
-			removeAllItems(&ll);
-			removeAllItems(&resultFrontList);
-			removeAllItems(&resultBackList);
-			break;
-		case 0:
-			removeAllItems(&ll);
-			removeAllItems(&resultFrontList);
-			removeAllItems(&resultBackList);
-			break;
-		default:
-			printf("Choice unknown;\n");
-			break;
-		}
-	}
-
-	return 0;
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void frontBackSplitLinkedList(LinkedList *ll, LinkedList *resultFrontList, LinkedList *resultBackList)
-{
-	/* add your code here */
+void frontBackSplitLinkedList(LinkedList *ll, LinkedList *resultFrontList,
+                              LinkedList *resultBackList) {
+  /* add your code here */
+  int splitCnt = ll->size % 2 == 0 ? ll->size / 2 : ll->size / 2 + 1;
+  ListNode *curLLNode;
+
+  if (ll == NULL || ll->head == NULL) return;
+
+  curLLNode = ll->head;
+  // 1. splitCnt만큼 ll 0번째부터 돌면서 front에 넣어준다
+  for (int i = 0; i < splitCnt; i++) {
+    ListNode *newNode = malloc(sizeof(ListNode));
+    newNode->item = curLLNode->item;
+    newNode->next = NULL;
+
+    ListNode *FLLastNode = findLastNode(resultFrontList);
+    if (FLLastNode == NULL) {
+      resultFrontList->head = newNode;
+    } else {
+      FLLastNode->next = newNode;
+    }
+
+    curLLNode = curLLNode->next;
+  }
+
+  while (curLLNode != NULL) {
+    ListNode *newNode = malloc(sizeof(ListNode));
+    newNode->item = curLLNode->item;
+    newNode->next = NULL;
+
+    ListNode *BLLastNode = findLastNode(resultBackList);
+    if (BLLastNode == NULL) {
+      resultBackList->head = newNode;
+    } else {
+      BLLastNode->next = newNode;
+    }
+
+    curLLNode = curLLNode->next;
+  }
+}
+
+int findIndex(LinkedList *ll, int item) {
+  ListNode *cur;
+  int idx = 0;
+
+  if (ll->head == NULL || ll == NULL) return -1;
+
+  cur = ll->head;
+
+  while (cur != NULL) {
+    if (cur->item == item) return idx;
+
+    cur = cur->next;
+    idx++;
+  }
+
+  return -1;
+}
+
+ListNode *findLastNode(LinkedList *ll) {
+  ListNode *temp;
+
+  if (ll == NULL || ll->head == NULL) return NULL;
+
+  temp = ll->head;
+
+  while (temp->next != NULL) {
+    temp = temp->next;
+  }
+
+  return temp;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-void printList(LinkedList *ll){
+void printList(LinkedList *ll) {
 
-	ListNode *cur;
-	if (ll == NULL)
-		return;
-	cur = ll->head;
-	if (cur == NULL)
-		printf("Empty");
-	while (cur != NULL)
-	{
-		printf("%d ", cur->item);
-		cur = cur->next;
-	}
-	printf("\n");
+  ListNode *cur;
+  if (ll == NULL) return;
+  cur = ll->head;
+  if (cur == NULL) printf("Empty");
+  while (cur != NULL) {
+    printf("%d ", cur->item);
+    cur = cur->next;
+  }
+  printf("\n");
 }
 
+void removeAllItems(LinkedList *ll) {
+  ListNode *cur = ll->head;
+  ListNode *tmp;
 
-void removeAllItems(LinkedList *ll)
-{
-	ListNode *cur = ll->head;
-	ListNode *tmp;
-
-	while (cur != NULL){
-		tmp = cur->next;
-		free(cur);
-		cur = tmp;
-	}
-	ll->head = NULL;
-	ll->size = 0;
+  while (cur != NULL) {
+    tmp = cur->next;
+    free(cur);
+    cur = tmp;
+  }
+  ll->head = NULL;
+  ll->size = 0;
 }
 
+ListNode *findNode(LinkedList *ll, int index) {
 
-ListNode * findNode(LinkedList *ll, int index){
+  ListNode *temp;
 
-	ListNode *temp;
+  if (ll == NULL || index < 0 || index >= ll->size) return NULL;
 
-	if (ll == NULL || index < 0 || index >= ll->size)
-		return NULL;
+  temp = ll->head;
 
-	temp = ll->head;
+  if (temp == NULL || index < 0) return NULL;
 
-	if (temp == NULL || index < 0)
-		return NULL;
+  while (index > 0) {
+    temp = temp->next;
+    if (temp == NULL) return NULL;
+    index--;
+  }
 
-	while (index > 0){
-		temp = temp->next;
-		if (temp == NULL)
-			return NULL;
-		index--;
-	}
-
-	return temp;
+  return temp;
 }
 
-int insertNode(LinkedList *ll, int index, int value){
+int insertNode(LinkedList *ll, int index, int value) {
 
-	ListNode *pre, *cur;
+  ListNode *pre, *cur;
 
-	if (ll == NULL || index < 0 || index > ll->size + 1)
-		return -1;
+  if (ll == NULL || index < 0 || index > ll->size + 1) return -1;
 
-	// If empty list or inserting first node, need to update head pointer
-	if (ll->head == NULL || index == 0){
-		cur = ll->head;
-		ll->head = malloc(sizeof(ListNode));
-		ll->head->item = value;
-		ll->head->next = cur;
-		ll->size++;
-		return 0;
-	}
+  // If empty list or inserting first node, need to update head pointer
+  if (ll->head == NULL || index == 0) {
+    cur = ll->head;
+    ll->head = malloc(sizeof(ListNode));
+    ll->head->item = value;
+    ll->head->next = cur;
+    ll->size++;
+    return 0;
+  }
 
-	// Find the nodes before and at the target position
-	// Create a new node and reconnect the links
-	if ((pre = findNode(ll, index - 1)) != NULL){
-		cur = pre->next;
-		pre->next = malloc(sizeof(ListNode));
-		pre->next->item = value;
-		pre->next->next = cur;
-		ll->size++;
-		return 0;
-	}
+  // Find the nodes before and at the target position
+  // Create a new node and reconnect the links
+  if ((pre = findNode(ll, index - 1)) != NULL) {
+    cur = pre->next;
+    pre->next = malloc(sizeof(ListNode));
+    pre->next->item = value;
+    pre->next->next = cur;
+    ll->size++;
+    return 0;
+  }
 
-	return -1;
+  return -1;
 }
 
+int removeNode(LinkedList *ll, int index) {
 
-int removeNode(LinkedList *ll, int index){
+  ListNode *pre, *cur;
 
-	ListNode *pre, *cur;
+  // Highest index we can remove is size-1
+  if (ll == NULL || index < 0 || index >= ll->size) return -1;
 
-	// Highest index we can remove is size-1
-	if (ll == NULL || index < 0 || index >= ll->size)
-		return -1;
+  // If removing first node, need to update head pointer
+  if (index == 0) {
+    cur = ll->head->next;
+    free(ll->head);
+    ll->head = cur;
+    ll->size--;
 
-	// If removing first node, need to update head pointer
-	if (index == 0){
-		cur = ll->head->next;
-		free(ll->head);
-		ll->head = cur;
-		ll->size--;
+    return 0;
+  }
 
-		return 0;
-	}
+  // Find the nodes before and after the target position
+  // Free the target node and reconnect the links
+  if ((pre = findNode(ll, index - 1)) != NULL) {
 
-	// Find the nodes before and after the target position
-	// Free the target node and reconnect the links
-	if ((pre = findNode(ll, index - 1)) != NULL){
+    if (pre->next == NULL) return -1;
 
-		if (pre->next == NULL)
-			return -1;
+    cur = pre->next;
+    pre->next = cur->next;
+    free(cur);
+    ll->size--;
+    return 0;
+  }
 
-		cur = pre->next;
-		pre->next = cur->next;
-		free(cur);
-		ll->size--;
-		return 0;
-	}
-
-	return -1;
+  return -1;
 }
